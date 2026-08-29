@@ -12,6 +12,7 @@
     "build:backend": "npm --prefix apps/backend run build",
     "build:frontend": "npm --prefix apps/frontend run build",
     "build": "npm run build:backend && npm run build:frontend",
+    "start:worker": "npm --prefix apps/backend run start:worker",
     "test:backend": "npm --prefix apps/backend run test",
     "test": "npm run test:backend",
     "db:generate": "npm --prefix apps/backend run db:generate",
