@@ -4,20 +4,6 @@
     {
       "src": "apps/frontend/package.json",
       "use": "@vercel/next"
-    },
-    {
-      "src": "apps/backend/api/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "apps/backend/api/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "apps/frontend/$1"
     }
   ]
 }
