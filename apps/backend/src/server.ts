@@ -105,10 +105,16 @@ app.use('/api/worker', workerRoutes);
 // Centralized error middleware
 app.use(errorHandler);
 
-// Initialize BullMQ Worker (only when running in standalone Node environment, not Vercel Serverless)
+// Initialize BullMQ Worker asynchronously (so Express HTTP server binds port instantly without waiting for Redis)
 let emailWorker: any = null;
 if (process.env.VERCEL !== '1') {
-  emailWorker = initializeEmailWorker();
+  setImmediate(() => {
+    try {
+      emailWorker = initializeEmailWorker();
+    } catch (err: any) {
+      logger.warn({ err: err?.message }, '⚠️ Deferred worker initialization warning');
+    }
+  });
 }
 
 // Start Express Server (only when running as standalone Node process)
