@@ -94,13 +94,21 @@ app.get('/', (req, res) => {
 
 import { workerRoutes } from './routes/worker.routes';
 
-// API Routes & Aliases
+// API Routes & Aliases (supports both /api/path and /path under serverless rewrites)
 app.use('/api/health', healthRoutes);
+app.use('/health', healthRoutes);
+
 app.use('/api/auth', authRoutes);
-app.use('/auth', authRoutes); // Alias for direct /auth/google endpoints
+app.use('/auth', authRoutes);
+
 app.use('/api/campaigns', campaignRoutes);
+app.use('/campaigns', campaignRoutes);
+
 app.use('/api/emails', emailRoutes);
+app.use('/emails', emailRoutes);
+
 app.use('/api/worker', workerRoutes);
+app.use('/worker', workerRoutes);
 
 // Centralized error middleware
 app.use(errorHandler);
