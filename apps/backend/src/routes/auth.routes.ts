@@ -25,7 +25,10 @@ router.get('/google', (req, res, next) => {
     });
   }
 
-  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+  })(req, res, next);
 });
 
 // GET /api/auth/google/callback
