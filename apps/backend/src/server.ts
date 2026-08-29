@@ -36,6 +36,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+// Enable trust proxy for reverse proxies (Render, Railway, Cloudflare, etc.)
+app.set('trust proxy', 1);
+
 // Express Session configuration for Passport
 app.use(
   session({
@@ -44,6 +47,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: env.NODE_ENV === 'production',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
