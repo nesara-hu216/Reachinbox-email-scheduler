@@ -113,12 +113,13 @@ if (process.env.VERCEL !== '1') {
 
 // Start Express Server (only when running as standalone Node process)
 if (process.env.VERCEL !== '1') {
-  const server = app.listen(env.PORT, () => {
+  const listenPort = process.env.PORT ? parseInt(process.env.PORT, 10) : env.PORT || 4000;
+  const server = app.listen(listenPort, '0.0.0.0', () => {
     const diag = getGoogleOAuthDiagnosticInfo();
     const dbDiag = getDatabaseDiagnosticInfo();
 
     logger.info(`==================================================`);
-    logger.info(`🚀 ReachInbox Backend Server running on port ${env.PORT}`);
+    logger.info(`🚀 ReachInbox Backend Server running on port ${listenPort} (0.0.0.0)`);
     logger.info(`📍 Server URL: ${env.BACKEND_URL}`);
     logger.info(`📍 Frontend URL: ${env.FRONTEND_URL}`);
     logger.info(`📍 Callback URL: ${env.GOOGLE_CALLBACK_URL}`);

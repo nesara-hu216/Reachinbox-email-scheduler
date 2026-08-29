@@ -6,7 +6,7 @@ let memoryServerInstance: any = null;
 let isStartingServer = false;
 
 async function startFallbackRedisServer() {
-  if (isStartingServer || memoryServerInstance) return;
+  if (env.NODE_ENV === 'production' || isStartingServer || memoryServerInstance) return;
   isStartingServer = true;
   try {
     logger.info('⚡ Local Redis not detected. Auto-starting embedded Redis server...');
