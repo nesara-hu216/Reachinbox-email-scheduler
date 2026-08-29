@@ -6,8 +6,8 @@ const API_BASE =
   (typeof window !== 'undefined'
     ? window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:4000/api'
-      : 'https://reachinbox-backend-pa30.onrender.com/api'
-    : 'https://reachinbox-backend-pa30.onrender.com/api');
+      : 'https://reachinbox-backend-production-a015.up.railway.app/api'
+    : 'https://reachinbox-backend-production-a015.up.railway.app/api');
 
 async function fetcher<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const defaultHeaders: HeadersInit = {
