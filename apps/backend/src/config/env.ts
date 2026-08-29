@@ -20,6 +20,11 @@ for (const envPath of possibleEnvPaths) {
   }
 }
 
+// Auto-sanitize REDIS_URL / Redis_URL if user pasted CLI commands or mixed casing
+let rawRedis = process.env.REDIS_URL || process.env.Redis_URL || 'redis://localhost:6379';
+rawRedis = rawRedis.replace(/^redis-cli\s+--tls\s+-u\s+/i, '').replace(/^redis-cli\s+-u\s+/i, '').trim();
+process.env.REDIS_URL = rawRedis;
+
 const envSchema = z.object({
   PORT: z.string().default('4000').transform((v) => parseInt(v, 10)),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -29,9 +34,9 @@ const envSchema = z.object({
     .string()
     .default('postgresql://postgres:postgrespassword@localhost:5432/reachinbox_email_scheduler?schema=public')
     .transform((v) => v.trim()),
-  REDIS_URL: z.string().default('redis://localhost:6379'),
+  REDIS_URL: z.string().default('redis://localhost:6379').transform((v) => v.trim()),
   SESSION_SECRET: z.string().default('reachinbox-dev-session-secret-key-min-32-chars'),
-  JWT_SECRET: z.string().default('reachinbox-dev-jwt-secret-key-min-32-chars'),
+  JWT_SECRET: z.string().default('reachinbox-dev-session-secret-key-min-32-chars'),
   GOOGLE_CLIENT_ID: z.string().optional().default('').transform((v) => v.trim().replace(/^["']|["']$/g, '')),
   GOOGLE_CLIENT_SECRET: z.string().optional().default('').transform((v) => v.trim().replace(/^["']|["']$/g, '')),
   GOOGLE_CALLBACK_URL: z.string().default('http://localhost:4000/api/auth/google/callback').transform((v) => v.trim()),
@@ -47,17 +52,31 @@ const envSchema = z.object({
 // Safe parse to prevent uncaught ZodError crashes during server startup
 const parsedResult = envSchema.safeParse(process.env);
 if (!parsedResult.success) {
-  console.warn('⚠️ Environment validation warning:', parsedResult.error.format());
+  console.warn('⚠️ Environment validation warning (using fallback defaults):', parsedResult.error.format());
 }
 
 export const env = parsedResult.success
   ? parsedResult.data
-  : envSchema.parse({
-      ...process.env,
-      DATABASE_URL:
-        process.env.DATABASE_URL ||
-        'postgresql://postgres:postgrespassword@localhost:5432/reachinbox_email_scheduler?schema=public',
-    });
+  : {
+      PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 4000,
+      NODE_ENV: (process.env.NODE_ENV as any) || 'development',
+      FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
+      BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:4000',
+      DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:postgrespassword@localhost:5432/reachinbox_email_scheduler?schema=public',
+      REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
+      SESSION_SECRET: process.env.SESSION_SECRET || 'reachinbox-dev-session-secret-key-min-32-chars',
+      JWT_SECRET: process.env.JWT_SECRET || 'reachinbox-dev-jwt-secret-key-min-32-chars',
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+      GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:4000/api/auth/google/callback',
+      SMTP_HOST: process.env.SMTP_HOST || 'smtp.ethereal.email',
+      SMTP_PORT: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587,
+      SMTP_USER: process.env.SMTP_USER || '',
+      SMTP_PASSWORD: process.env.SMTP_PASSWORD || '',
+      WORKER_CONCURRENCY: process.env.WORKER_CONCURRENCY ? parseInt(process.env.WORKER_CONCURRENCY, 10) : 5,
+      MIN_SEND_DELAY_MS: process.env.MIN_SEND_DELAY_MS ? parseInt(process.env.MIN_SEND_DELAY_MS, 10) : 2000,
+      MAX_EMAILS_PER_HOUR: process.env.MAX_EMAILS_PER_HOUR ? parseInt(process.env.MAX_EMAILS_PER_HOUR, 10) : 200,
+    };
 
 // Strict regex pattern for Google OAuth Web Client IDs
 export const GOOGLE_CLIENT_ID_REGEX = /^[0-9]+-[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/;
