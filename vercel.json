@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "builds": [
+  "crons": [
     {
-      "src": "apps/frontend/package.json",
-      "use": "@vercel/next"
+      "path": "/api/worker/process",
+      "schedule": "* * * * *"
     }
   ]
 }
