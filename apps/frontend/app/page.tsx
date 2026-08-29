@@ -51,9 +51,15 @@ export default function LoginPage() {
   }, [router]);
 
   const handleGoogleLogin = () => {
-    const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api';
-    window.location.href = `${backendUrl}/auth/google`;
+    const rawApiUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')
+        ? 'https://reachinbox-backend-pa30.onrender.com/api'
+        : 'http://localhost:4000/api');
+
+    const cleanBackendRoot = rawApiUrl.replace(/\/$/, '').replace(/\/api$/, '');
+    window.location.href = `${cleanBackendRoot}/api/auth/google`;
   };
 
   const handleDevLogin = async () => {
