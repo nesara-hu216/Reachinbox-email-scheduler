@@ -67,6 +67,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Root welcome endpoint
+app.get('/', (req, res) => {
+  res.json({
+    service: 'ReachInbox Email Scheduler Engine API',
+    status: 'healthy',
+    documentation: 'https://github.com/nesara-hu216/reachinbox-email-scheduler',
+    healthcheck: '/api/health',
+  });
+});
+
 // API Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
