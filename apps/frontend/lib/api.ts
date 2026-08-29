@@ -1,7 +1,9 @@
 import { ApiResponse, User, Sender, EmailJob, StatsSummary, ScheduleRequest, ScheduleResponse } from '../types';
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api';
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  (typeof window !== 'undefined' ? '/api' : 'http://localhost:4000/api');
 
 async function fetcher<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const defaultHeaders: HeadersInit = {
