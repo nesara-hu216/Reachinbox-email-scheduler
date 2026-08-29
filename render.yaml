@@ -1,12 +1,11 @@
 services:
-  # Backend Express Server + BullMQ Worker (Free Plan)
+  # Backend Express Server + BullMQ Worker
   - type: web
     name: reachinbox-backend
     env: node
     plan: free
-    rootDir: apps/backend
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    buildCommand: npm install && npm run build --workspace=apps/backend
+    startCommand: npm start --workspace=apps/backend
     envVars:
       - key: NODE_ENV
         value: production
@@ -17,14 +16,13 @@ services:
       - key: JWT_SECRET
         value: reachinbox-dev-jwt-secret-key-min-32-chars
 
-  # Frontend Next.js Web App (Free Plan)
+  # Frontend Next.js Web App
   - type: web
     name: reachinbox-frontend
     env: node
     plan: free
-    rootDir: apps/frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    buildCommand: npm install && npm run build --workspace=apps/frontend
+    startCommand: npm start --workspace=apps/frontend
     envVars:
       - key: NODE_ENV
         value: production
