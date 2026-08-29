@@ -3,7 +3,11 @@ import { ApiResponse, User, Sender, EmailJob, StatsSummary, ScheduleRequest, Sch
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
-  (typeof window !== 'undefined' ? '/api' : 'http://localhost:4000/api');
+  (typeof window !== 'undefined'
+    ? window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000/api'
+      : 'https://reachinbox-backend-pa30.onrender.com/api'
+    : 'https://reachinbox-backend-pa30.onrender.com/api');
 
 async function fetcher<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const defaultHeaders: HeadersInit = {
