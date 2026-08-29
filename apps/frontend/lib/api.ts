@@ -70,10 +70,8 @@ export const api = {
     try {
       return await fetcher<User>('/auth/me');
     } catch (err: any) {
-      if (err.status === 401 || err.code === 'UNAUTHORIZED') {
-        return null; // Return null cleanly for unauthenticated users without raising errors
-      }
-      throw err;
+      // Return null cleanly for any unauthenticated state so login screen renders smoothly
+      return null;
     }
   },
   logout: () => fetcher<{ message: string }>('/auth/logout', { method: 'POST' }),
