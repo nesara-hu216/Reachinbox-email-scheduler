@@ -24,7 +24,11 @@ async function startFallbackRedisServer() {
 export const redisConnection = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: null, // Required by BullMQ
   enableReadyCheck: false,
+  connectTimeout: 5000,
   retryStrategy(times) {
+    if (env.NODE_ENV === 'production' && times > 5) {
+      return null; // Stop retrying in production to prevent startup hangs
+    }
     if (times === 1) {
       startFallbackRedisServer();
     }

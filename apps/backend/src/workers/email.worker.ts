@@ -12,10 +12,11 @@ const prisma = new PrismaClient();
 // Helper delay
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export function initializeEmailWorker(): Worker<EmailJobData> {
-  const worker = new Worker<EmailJobData>(
-    EMAIL_QUEUE_NAME,
-    async (job: Job<EmailJobData>) => {
+export function initializeEmailWorker(): Worker<EmailJobData> | null {
+  try {
+    const worker = new Worker<EmailJobData>(
+      EMAIL_QUEUE_NAME,
+      async (job: Job<EmailJobData>) => {
       const { emailJobId, senderId, hourlyLimit } = job.data;
       logger.info({ jobId: job.id, emailJobId }, '🔨 BullMQ Worker picked up email job');
 
@@ -148,4 +149,8 @@ export function initializeEmailWorker(): Worker<EmailJobData> {
   logger.info({ concurrency: env.WORKER_CONCURRENCY }, '🚀 BullMQ Email Worker initialized');
 
   return worker;
+  } catch (err: any) {
+    logger.warn({ err: err?.message }, '⚠️ Could not initialize BullMQ worker (Redis may be offline or initializing)');
+    return null;
+  }
 }

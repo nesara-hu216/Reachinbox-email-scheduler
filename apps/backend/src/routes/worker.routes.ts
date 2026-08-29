@@ -27,7 +27,7 @@ router.all('/process', async (req: Request, res: Response) => {
 
     // Allow worker window to process ready jobs (5 seconds serverless window)
     await new Promise((resolve) => setTimeout(resolve, 5000));
-    await worker.close();
+    if (worker) await worker.close();
     await queue.close();
 
     return res.status(200).json({
