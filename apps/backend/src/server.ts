@@ -1,0 +1,122 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import passport from 'passport';
+import { env, isGoogleOauthConfigured, getGoogleOAuthDiagnosticInfo, getDatabaseDiagnosticInfo } from './config/env';
+import { logger } from './utils/logger';
+import { setupPassport } from './config/passport';
+import { errorHandler } from './middleware/error.middleware';
+import { authRoutes } from './routes/auth.routes';
+import { campaignRoutes } from './routes/campaign.routes';
+import { emailRoutes } from './routes/email.routes';
+import { healthRoutes } from './routes/health.routes';
+import { initializeEmailWorker } from './workers/email.worker';
+
+const app = express();
+
+// Security and utility middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false,
+  })
+);
+
+app.use(
+  cors({
+    origin: [env.FRONTEND_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
+
+// Express Session configuration for Passport
+app.use(
+  session({
+    secret: env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    },
+  })
+);
+
+// Initialize Passport
+setupPassport();
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  if (req.path !== '/api/health') {
+    logger.info({ method: req.method, path: req.path }, 'Incoming Request');
+  }
+  next();
+});
+
+// API Routes
+app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/campaigns', campaignRoutes);
+app.use('/api/emails', emailRoutes);
+
+// Centralized error middleware
+app.use(errorHandler);
+
+// Initialize BullMQ Worker (only when running in standalone Node environment, not Vercel Serverless)
+let emailWorker: any = null;
+if (process.env.VERCEL !== '1') {
+  emailWorker = initializeEmailWorker();
+}
+
+// Start Express Server (only when running as standalone Node process)
+if (process.env.VERCEL !== '1') {
+  const server = app.listen(env.PORT, () => {
+    const diag = getGoogleOAuthDiagnosticInfo();
+    const dbDiag = getDatabaseDiagnosticInfo();
+
+    logger.info(`==================================================`);
+    logger.info(`🚀 ReachInbox Backend Server running on port ${env.PORT}`);
+    logger.info(`📍 Server URL: ${env.BACKEND_URL}`);
+    logger.info(`📍 Frontend URL: ${env.FRONTEND_URL}`);
+    logger.info(`📍 Callback URL: ${env.GOOGLE_CALLBACK_URL}`);
+    logger.info(`📍 Healthcheck: ${env.BACKEND_URL}/api/health`);
+    logger.info(`📍 OAuth Status: ${env.BACKEND_URL}/api/auth/google/status`);
+    logger.info(`--------------------------------------------------`);
+    logger.info(`🗄️ Database Host: ${dbDiag.host}:${dbDiag.port}`);
+    logger.info(`🗄️ Database User: ${dbDiag.user}`);
+    logger.info(`🗄️ Database Name: ${dbDiag.database}`);
+    logger.info(`--------------------------------------------------`);
+
+    if (diag.configured) {
+      logger.info(`✓ Google OAuth: CONFIGURED (Client ID Masked: ${diag.clientIdMasked})`);
+    } else {
+      logger.warn(`⚠ Google OAuth: NOT CONFIGURED`);
+    }
+    logger.info(`==================================================`);
+  });
+
+  const gracefulShutdown = async (signal: string) => {
+    logger.info(`Received ${signal}. Initiating graceful shutdown...`);
+    server.close(async () => {
+      logger.info('Http server closed.');
+      if (emailWorker) await emailWorker.close();
+      logger.info('BullMQ worker closed.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+}
+
+export default app;
