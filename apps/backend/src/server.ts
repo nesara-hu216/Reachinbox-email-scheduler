@@ -145,6 +145,10 @@ if (process.env.VERCEL !== '1') {
     logger.info(`==================================================`);
   });
 
+  // Render official proxy keep-alive timeout configuration (prevents 502 Bad Gateway socket drops)
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 120500;
+
   const gracefulShutdown = async (signal: string) => {
     logger.info(`Received ${signal}. Initiating graceful shutdown...`);
     server.close(async () => {
