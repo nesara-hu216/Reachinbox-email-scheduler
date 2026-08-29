@@ -4,7 +4,7 @@ services:
     name: reachinbox-backend
     env: node
     plan: free
-    buildCommand: npm run db:generate && npm run build:backend
+    buildCommand: npm install && npm run db:generate && npm run build:backend
     startCommand: npm run --prefix apps/backend start
     envVars:
       - key: NODE_ENV
@@ -21,7 +21,7 @@ services:
     name: reachinbox-frontend
     env: node
     plan: free
-    buildCommand: npm run build:frontend
+    buildCommand: npm install && npm run build:frontend
     startCommand: npm run --prefix apps/frontend start
     envVars:
       - key: NODE_ENV
