@@ -77,9 +77,10 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes
+// API Routes & Aliases
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes); // Alias for direct /auth/google endpoints
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/emails', emailRoutes);
 
