@@ -28,7 +28,7 @@ async function fetcher<T>(endpoint: string, options: RequestInit = {}): Promise<
     response = await fetch(`${API_BASE}${endpoint}`, config);
   } catch (netErr: any) {
     const err = new Error(
-      'Unable to connect to backend server. Make sure the backend is running at http://localhost:4000'
+      `Unable to connect to backend server at ${API_BASE}. Please check server connectivity.`
     ) as any;
     err.code = 'NETWORK_ERROR';
     err.status = 0;

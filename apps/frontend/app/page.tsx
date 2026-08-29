@@ -45,7 +45,7 @@ export default function LoginPage() {
       })
       .catch((err) => {
         if (err?.code === 'NETWORK_ERROR') {
-          toast.error('Unable to connect to backend server. Make sure backend is running at http://localhost:4000');
+          toast.error('Unable to connect to backend server. Please verify backend server status.');
         }
       });
   }, [router]);
