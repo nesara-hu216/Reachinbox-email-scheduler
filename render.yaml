@@ -29,15 +29,9 @@ services:
           name: reachinbox-redis
           property: connectionString
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: reachinbox-frontend
-          property: url
+        value: https://reachinbox-frontend.onrender.com
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: reachinbox-backend
-          property: url
+        value: https://reachinbox-backend.onrender.com
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -66,14 +60,12 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: reachinbox-backend
-          property: url
+        value: https://reachinbox-backend.onrender.com
 
 databases:
   - name: reachinbox-postgres
     plan: free
+
 
 
 
