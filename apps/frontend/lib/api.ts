@@ -6,12 +6,15 @@ const API_BASE =
   (typeof window !== 'undefined'
     ? window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:4000/api'
-      : 'https://reachinbox-email-worker.vercel.app/api'
-    : 'https://reachinbox-email-worker.vercel.app/api');
+      : 'https://reachinbox-backend-pa30.onrender.com/api'
+    : 'https://reachinbox-backend-pa30.onrender.com/api');
 
 async function fetcher<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
   const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
   const config: RequestInit = {
@@ -74,12 +77,23 @@ export const api = {
       return null;
     }
   },
-  logout: () => fetcher<{ message: string }>('/auth/logout', { method: 'POST' }),
-  devLogin: (email?: string, name?: string) =>
-    fetcher<{ user: User; token: string }>('/auth/dev-login', {
+  logout: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
+    return fetcher<{ message: string }>('/auth/logout', { method: 'POST' });
+  },
+  devLogin: async (email?: string, name?: string) => {
+    const res = await fetcher<{ user: User; token: string }>('/auth/dev-login', {
       method: 'POST',
       body: JSON.stringify({ email, name }),
-    }),
+    });
+
+    if (typeof window !== 'undefined' && res?.token) {
+      localStorage.setItem('auth_token', res.token);
+    }
+    return res;
+  },
 
   // Campaign APIs
   createCampaign: (data: ScheduleRequest) =>
