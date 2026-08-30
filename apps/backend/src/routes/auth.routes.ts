@@ -3,6 +3,7 @@ import passport from 'passport';
 import { AuthController } from '../controllers/auth.controller';
 import { requireAuth } from '../middleware/auth.middleware';
 import { env, isGoogleOauthConfigured, getGoogleOAuthDiagnosticInfo } from '../config/env';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
