@@ -13,16 +13,9 @@ router.get('/google/status', AuthController.getOAuthStatus);
 router.get('/google', (req, res, next) => {
   const diag = getGoogleOAuthDiagnosticInfo();
 
-  if (!diag.clientIdPresent || !diag.isValidFormat) {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: 'OAUTH_NOT_CONFIGURED',
-        message:
-          'Google OAuth Client ID is invalid or missing in backend/.env. Please set a valid Web Application GOOGLE_CLIENT_ID (ending in .apps.googleusercontent.com) and GOOGLE_CLIENT_SECRET in apps/backend/.env and restart the server.',
-        diagnostic: diag,
-      },
-    });
+  if (!diag.configured || !diag.clientIdPresent || !diag.isValidFormat) {
+    logger.warn({ diag }, 'Google OAuth attempted but keys are not configured in environment');
+    return res.redirect('/?error=oauth_not_configured');
   }
 
   passport.authenticate('google', {
