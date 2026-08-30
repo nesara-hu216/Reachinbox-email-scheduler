@@ -1,4 +1,10 @@
 services:
+  # Managed Redis Store
+  - type: redis
+    name: reachinbox-redis
+    plan: free
+    ipAllowList: []
+
   # Backend Express Server + BullMQ Worker
   - type: web
     name: reachinbox-backend
@@ -69,11 +75,6 @@ databases:
   - name: reachinbox-postgres
     plan: free
 
-# Managed Redis Key-Value Store
-redis:
-  - name: reachinbox-redis
-    plan: free
-    ipAllowList: []
 
 
 
