@@ -25,7 +25,8 @@ export class AuthController {
     });
 
     logger.info({ userId: user.id, email: user.email }, 'User successfully logged in via Google OAuth');
-    return res.redirect(`${env.FRONTEND_URL}/dashboard`);
+    const redirectTarget = env.FRONTEND_URL.replace(/\/$/, '');
+    return res.redirect(`${redirectTarget}/dashboard?token=${encodeURIComponent(token)}`);
   }
 
   public static async getMe(req: Request, res: Response) {

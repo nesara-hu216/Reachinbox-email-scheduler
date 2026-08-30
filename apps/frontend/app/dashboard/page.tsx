@@ -31,6 +31,20 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
+    // Extract token query parameter from Google OAuth redirect if present
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get('token');
+      if (urlToken) {
+        localStorage.setItem('auth_token', urlToken);
+        // Clean token from URL bar for clean UI
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (userError) {
       toast.error('Session expired. Redirecting to login.');
       router.push('/');
